@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Analyzer</title>
+  <link href="fonts/materialIcons.css" rel="stylesheet">
+  <link href="fonts/roboto.css" rel="stylesheet">
+  <link rel="stylesheet" href="lib/react-select.css">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0px;
+    }
+    body {
+      background-color: #222222;
+      min-height: 100%;
+    }
+  </style>
+
+  <style>
+    .glyphicon-refresh-animate {
+      -animation: spin .7s infinite linear;
+      -webkit-animation: spin2 .7s infinite linear;
+    }
+
+    @-webkit-keyframes spin2 {
+      from {
+        -webkit-transform: rotate(0deg);
+      }
+      to {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: scale(1) rotate(0deg);
+      }
+      to {
+        transform: scale(1) rotate(360deg);
+      }
+    }
+
+    .activeContent {
+      padding: 8px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      height: 30px;
+      background-color: darkred;
+      overflow: hidden;
+    }
+
+    .tabContent {
+      padding: 10px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+    }
+
+    #sidePanel {
+      width: 500px;
+      background-color: #111111;
+      color: white;
+      padding: 0px;
+      font-size: 11px;
+    }
+
+    .contentContainer {
+      width: 100%;
+      overflow: auto;
+    }
+
+    .canvasContainer {
+      position: relative;
+    }
+
+    .panel {
+      padding: 10px;
+      background-color: rgba(20, 20, 20, 0.8);
+      color: white;
+    }
+
+    .sectionHeader {
+      font-size: 12px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      border-bottom: 1px solid deepskyblue;
+      color: deepskyblue;
+      clear: left;
+    }
+
+    .propertyName {
+      font-size: 11px;
+      color: #CCCCCC;
+    }
+
+
+    .propertyValue {
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+
+    .rootContainer {
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 100%;
+    }
+
+    #frameComment {
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin-top: auto;
+      margin-bottom: auto;
+      margin-right: auto;
+      margin-left: auto;
+      width: 512px;
+      height: 320px;
+
+      position: fixed;
+      z-index: 20;
+      opacity: 1;
+      background-color: rgba(20, 20, 20, 0.9);
+      padding-left: 10px;
+      vertical-align: middle;
+      color: white;
+      padding: 10px;
+      font-size: 11px;
+      border-radius: 1em;
+      /*overflow: scroll;*/
+    }
+
+    .maxWidthAndHeight {
+      width: 100%;
+      height: 100%;
+    }
+
+    .runDetail {
+      padding-top: 4px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: white;
+    }
+
+    .runPaper {
+      background-color: black;
+    }
+
+    .splitCenterContainer {
+      overflow: hidden;
+      width: 100%;
+      height: calc(100% - 56px);
+    }
+
+    .splitVerticalContainer {
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: calc(100% - 56px);
+    }
+
+    .splitVerticalContent {
+      width: 50%;
+      overflow: auto;
+    }
+
+    .splitHorizontalContainer {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: calc(100% - 56px);
+    }
+
+    .splitHorizontalContent {
+      height: 50%;
+      overflow: auto;
+    }
+
+    .splitTextContent {
+      padding: 8px;
+      /*font-family: 'Roboto Mono', monospace;*/
+      font-family: 'Roboto';
+      font-size: 14px;
+      color: #CCCCCC;
+    }
+    .componentHeader {
+      font-family: 'Roboto';
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    .playerCanvasContainer {
+      width: 100%;
+      height: calc(100% - 10px);
+      cursor: grab; cursor: -webkit-grab;
+      overflow: hidden;
+    }
+    .playerCanvas {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      pointer-events: none;
+    }
+    .playerTableContainer {
+      padding: 8px;
+      /*font-family: 'Roboto Mono', monospace;*/
+      font-family: 'Roboto';
+      font-size: 14px;
+      color: #CCCCCC;
+    }
+
+    .playerCenterContainer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .playerCenterContent {
+      margin: auto;
+      position: absolute;
+      color: white;
+      width: 256px;
+      height: 256px;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      font-family: 'Roboto';
+      text-align: center;
+    }
+
+    .playerSplitVerticalContent {
+      width: 100%;
+      overflow: auto;
+    }
+
+    .playerSplitVerticalContainer {
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: calc(100% - 56px);
+    }
+
+    .playerLabel {
+      position: absolute;
+      color: #FFFFFF;
+      font-size: 18px;
+      font-family: 'Roboto';
+      font-weight: bold;
+      padding: 10px;
+      background-color: rgba(20, 20, 20, 0.8);
+      user-select: none;
+    }
+
+    .playerStep {
+      color: #FFFFFF;
+      font-size: 14px;
+      line-height: 2;
+    }
+    .playerShortcut {
+      color: white;
+      font-weight: bold;
+      font-family: 'Roboto Mono', monospace;
+      padding: 4px;
+      background-color: #212121;
+    }
+    .votingSessionContainer {
+      width: 100%;
+      height: calc(100% - 8px);
+    }
+    .voteResult {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: white;
+    }
+
+    .builderSection {
+      display: flex;
+      flex-direction: row;
+      font-family: 'Roboto';
+      font-size: 14px;
+      color: white;
+      padding: 8px;
+      background-color: #333333;
+      height: 24px;
+      line-height: 24px;
+    }
+    .builderContainer {
+      display: flex;
+      flex-direction: row;
+      /*width: 100%;*/
+      background-color: #212121;
+      /*padding: 4px;*/
+      /*padding-left: 8px;*/
+      /*margin-bottom: 4px;*/
+    }
+
+    .builderVideoContainer {
+      padding-top: 4px;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+      border-left: solid 4px orange;
+    }
+
+    .builderContainer > div {
+      padding: 4px;
+    }
+    .videoSelectionLabel {
+      font-family: 'Roboto';
+      color: white;
+      line-height: 40px;
+      text-align: center;
+    }
+    .builderURL {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: white;
+    }
+    .builderCaption {
+      font-family: 'Roboto';
+      font-size: 12px;
+      color: aqua;
+      padding: 8px;
+    }
+    /*.videoSelectionContainer > div:nth-child(2) {
+      width: 88px;
+    }
+    .videoSelectionContainer > div:nth-child(3) {
+      width: 400px;
+    }
+    .videoSelectionContainer > div:nth-child(4) {
+      width: 400px;
+    }
+    .videoSelectionContainer > div:nth-child(5) {
+      width: 80px;
+    }*/
+
+    .Select {
+      /*font-family: 'Roboto Mono', monospace;*/
+      font-family: 'Roboto';
+      font-size: 13px;
+    }
+    .Select-menu-outer {
+      z-index: 3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="maxWidthAndHeight" id="analyzer-app"></div>
+  <!-- Dependencies -->
+  <!--<script src="lib/react.js"></script>
+  <script src="lib/react-dom.js"></script>-->
+  <!-- Main -->
+  <script src="lib/mousetrap.min.js"></script>
+  <script src="./dist/analyzer.bundle.js"></script>
+
+</body>
+
+</html>
