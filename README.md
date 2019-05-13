@@ -8,6 +8,6 @@ Based on https://github.com/mbebenita/aomanalyzer.
  
  
  
- 
+ ![howto](https://github.com/pengbins/aomanalyzer.io/blob/master/img/aomanalyzer.gif)
  
  
