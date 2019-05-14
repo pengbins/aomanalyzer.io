@@ -1,0 +1,169 @@
+<!DOCTYPE html> 
+<html> 
+<head>
+  <title>Visionular</title>
+</head>
+
+<body> 
+<!-- side by side -->
+<div style="text-align:center"> 
+  <br><br>
+  <video id="video1" width="720" controls style="vertical-align:left;">
+    Your browser does not support the video tag.
+  </video>
+  <video id="video2" width="720" controls style="vertical-align:right;">
+    Your browser does not support the video tag.
+  </video>
+</div> 
+
+<div class="it_maind">
+  <font color=#AAAAAA>
+    <p>Control:
+      <button onclick="playPause(video1, video2)">Play/Pause</button> 
+      <button onclick="stop(video1, video2)">Stop</button> 
+      <button onclick="makeRes(video1, video2, 1080)">1080</button>
+      <button onclick="makeRes(video1, video2, 720)">720</button>
+      <button onclick="makeRes(video1, video2, 540)">540</button>
+    </p>
+    <p>Video: &nbsp;
+      <input id="v_file" type="file" onchange="playFile('v_file', 'video1')">
+      <input id="v_file2" type="file" onchange="playFile('v_file2', 'video2')">
+    </p>
+    <p> Time:   
+      <input id="time_value" type="value"> sec <button onclick="setTime(video1, video2, 'time_value')">Set Time</button>
+    </p>
+    <p> Player width:
+      <input id="player_value" type="value"> px <button onclick="setRes(video1, video2)">Set Resolution</button>
+    </p>
+  </font>
+</div>
+
+<!-- slide -->
+<!-- ref: https://codemyui.com/video-comparison-slider-animation-using-html5 -->
+<br><br>
+<div id="video-compare-container">
+  <video id="video4">
+  </video>
+  <div id="video-clipper">
+  <video id="video3">
+  </video>
+  </div>
+</div>
+
+<div>
+  <font color=#AAAAAA>
+    <p>Control
+      <button onclick="playPause(video3, video4)">Play/Pause</button> 
+      <button onclick="stop(video3, video4)">Stop</button> 
+    </p>
+    <p>Video: &nbsp;
+      <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')">
+      <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')">
+    </p>
+    <p>Time: 
+      <input id="time_value2" type="value"> sec <button onclick="setTime(video3, video4, 'time_value2')">Set Time</button>
+    </p>
+  </font>
+</div>
+
+<!-- set border -->
+<style>
+body {
+  background: #FDF5E6;
+  margin: 1rem;
+}
+#video-compare-container {
+  display: inline-block;
+  line-height: 0;
+  position: relative;
+  width: 100%;
+  padding-top: 42.3%;
+}
+#video-compare-container > video {
+  width: 100%;
+  position: absolute;
+  top: 0; height: 100%;
+}
+#video-clipper {
+  width: 50%; position: absolute;
+  top: 0; bottom: 0;
+  overflow: hidden;
+  border-right-style:solid;
+  border-color:#FFFAFA;
+  border-width:1px
+}
+#video-clipper video {
+  width: 200%;
+  postion: absolute;
+  height: 100%;
+}
+</style>
+
+<script>
+// Slide window
+function trackLocation(e) {
+  var rect = videoContainer.getBoundingClientRect(),
+      position = ((e.pageX - rect.left) / videoContainer.offsetWidth)*100;
+  if (position <= 92 && position >=8) { 
+    videoClipper.style.width = position+"%";
+    clippedVideo.style.width = ((100/position)*100)+"%";
+    clippedVideo.style.zIndex = 3;
+  }
+}
+var videoContainer = document.getElementById("video-compare-container"),
+videoClipper = document.getElementById("video-clipper"),
+clippedVideo = videoClipper.getElementsByTagName("video")[0];
+videoContainer.addEventListener("mousemove", trackLocation, false); 
+videoContainer.addEventListener("touchstart",trackLocation,false);
+videoContainer.addEventListener("touchmove",trackLocation,false);
+
+// Player controller
+function playFile(id, tag){
+    var file = document.getElementById(id).files[0];
+        var url = URL.createObjectURL(file);
+        console.log(url);
+        document.getElementById(tag).src = url;
+}
+function playPause(v1, v2) { 
+  if (v1.paused) {
+    v1.play();
+    v2.play();
+  }
+  else { 
+    v1.pause();
+    v2.pause();
+  }
+} 
+
+function stop(v1, v2) { 
+    v1.pause();
+    v2.pause();
+    v1.currentTime = 0;
+    v2.currentTime = 0;
+} 
+
+function load(v1, v2) {
+  v1.load();
+  v2.load();
+}
+
+function setTime(v1, v2, time_value) {
+    time = document.getElementById(time_value).value
+    v1.currentTime = time;
+    v2.currentTime = time;
+}
+
+function makeRes(v1, v2, width) { 
+    v1.width = width;
+    v2.width = width;
+}
+
+function setRes(v1, v2) {
+    resolution = document.getElementById("player_value").value
+    v1.width = resolution;
+    v2.width = resolution;
+}
+</script>
+
+</body> 
+</html>
