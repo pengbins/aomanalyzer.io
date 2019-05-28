@@ -51,6 +51,11 @@
   <!-- ref: https://codemyui.com/video-comparison-slider-animation-using-html5 -->
 
   <div id="slide" class="tabcontent">
+
+    <p>Video: &nbsp;
+      <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')">
+      <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')">
+    </p>
     <div id="video-compare-container">
       <video id="video4">
       </video>
@@ -65,10 +70,6 @@
         <p>Control
           <button onclick="playPause(video3, video4)">Play/Pause</button>
           <button onclick="stop(video3, video4)">Stop</button>
-        </p>
-        <p>Video: &nbsp;
-          <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')">
-          <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')">
         </p>
         <p>Time:
           <input id="time_value2" type="value"> sec <button onclick="setTime(video3, video4, 'time_value2')">Set
@@ -231,6 +232,7 @@
       v1.width = resolution;
       v2.width = resolution;
     }
+    document.getElementsByClassName('tablinks')[1].click()
   </script>
 
 </body>
