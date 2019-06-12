@@ -32,6 +32,7 @@
           <button onclick="makeRes(video1, video2, 1080)">1080</button>
           <button onclick="makeRes(video1, video2, 720)">720</button>
           <button onclick="makeRes(video1, video2, 540)">540</button>
+          <button onclick="makeRes(video1, video2, 0)">origin</button>
         </p>
         <p>Video: &nbsp;
           <input id="v_file" type="file" onchange="playFile('v_file', 'video1')">
@@ -53,8 +54,8 @@
   <div id="slide" class="tabcontent">
 
     <p>Video: &nbsp;
-      <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')">
-      <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')">
+      <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"> </span>
+      <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span>
     </p>
     <div id="video-compare-container">
       <video id="video4">
@@ -70,6 +71,9 @@
         <p>Control
           <button onclick="playPause(video3, video4)">Play/Pause</button>
           <button onclick="stop(video3, video4)">Stop</button>
+          <button onclick="fitWindow()">Fit</button>
+          <button onclick="makeResA()">originA</button>
+          <button onclick="makeResB()">originB</button>
         </p>
         <p>Time:
           <input id="time_value2" type="value"> sec <button onclick="setTime(video3, video4, 'time_value2')">Set
@@ -185,13 +189,27 @@
     videoContainer.addEventListener("mousemove", trackLocation, false);
     videoContainer.addEventListener("touchstart", trackLocation, false);
     videoContainer.addEventListener("touchmove", trackLocation, false);
-
+    var videoRatio = {"video3":"100%", "video4": "100%" };
     // Player controller
     function playFile(id, tag) {
+      fitWindow();
       var file = document.getElementById(id).files[0];
       var url = URL.createObjectURL(file);
       console.log(url);
-      document.getElementById(tag).src = url;
+      var v = document.getElementById(tag)
+      v.src = url;
+      v.addEventListener("loadedmetadata", function (e) {
+        var width = this.videoWidth,
+          height = this.videoHeight;
+        var sz = document.getElementById( tag +"_size" )
+        sz.innerHTML = width.toString() + "x" + height.toString();
+        
+        var winWidth = videoContainer.offsetWidth;
+        var ratio = (width * 100 / winWidth);
+        ratio = ratio > 100 ? 100 : ratio;
+        videoRatio[tag] = ratio.toFixed(0) + "%";
+        console.log("v: ", width, height, tag, winWidth, videoRatio[tag] );
+      }, false);
     }
     function playPause(v1, v2) {
       if (v1.paused) {
@@ -211,6 +229,9 @@
       v2.currentTime = 0;
     }
 
+	  function rotate(v1, v2) {
+      
+    }
     function load(v1, v2) {
       v1.load();
       v2.load();
@@ -225,6 +246,17 @@
     function makeRes(v1, v2, width) {
       v1.width = width;
       v2.width = width;
+    }
+    
+    function fitWindow() {
+      videoContainer.style.width = "100%"
+    }
+    
+    function makeResA() {
+      videoContainer.style.width = videoRatio.video3
+    }
+    function makeResB() {
+      videoContainer.style.width = videoRatio.video4
     }
 
     function setRes(v1, v2) {
