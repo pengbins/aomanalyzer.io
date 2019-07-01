@@ -10,6 +10,7 @@
   <div class="tab">
     <button class="tablinks" onclick="openTab(event, 'sidebyside')">Side by side</button>
     <button class="tablinks" onclick="openTab(event, 'slide')">Slide</button>
+    <button class="tablinks" onclick="openTab(event, 'help')">Help</button>
   </div>
 
   <!-- side by side -->
@@ -75,6 +76,14 @@
         </p>
       </font>
     </div>
+  </div>
+  <div id="help" class="tabcontent">
+    <p>URL arguments:</p>
+    <p>mode: sbs / slide </p>
+    <p>videoA: url for the video load to left </p>
+    <p>VideoB: url for the video load to right  </p>
+    <p>Example1:  https://pengbins.github.io/aomanalyzer.io/webPlayer.html?mode=sbs&VideoA=https://demo.visionular.cn/videos/av1/Tears_of_Steal-4k-1920-3min.mov-55-8-out.mp4&VideoB=https://demo.visionular.cn/videos/av1/Tears_of_Steal-4k-1920-3min.mov-50-8-out.mp4</p>
+    <p>Example2:  https://pengbins.github.io/aomanalyzer.io/webPlayer.html?mode=slide&VideoA=https://demo.visionular.cn/videos/av1/Tears_of_Steal-4k-1920-3min.mov-55-8-out.mp4&VideoB=https://demo.visionular.cn/videos/av1/Tears_of_Steal-4k-1920-3min.mov-50-8-out.mp4</p>
   </div>
   <div style="text-align: center" > Powered by <a href="mailto:sandychuangster@gmail.com">Sandy Chuang</a> <a href="https://github.com/pengbins/aomanalyzer.io/blob/master/webPlayer.html">Code</a>  </div>
   <!-- set border -->
@@ -192,10 +201,8 @@
     videoContainer.addEventListener("touchmove", trackLocation, false);
     var videoRatio = {"video3":"100%", "video4": "100%" };
     // Player controller
-    function playFile(id, tag) {
-      fitWindow();
-      var file = document.getElementById(id).files[0];
-      var url = URL.createObjectURL(file);
+    
+    function playURL(url, tag){
       console.log(url);
       var v = document.getElementById(tag)
       v.src = url;
@@ -212,6 +219,14 @@
         console.log("v: ", width, height, tag, winWidth, videoRatio[tag] );
       }, false);
     }
+
+    function playFile(id, tag) {
+      fitWindow();
+      var file = document.getElementById(id).files[0];
+      var url = URL.createObjectURL(file);
+      playURL(url, tag);
+    }
+
     function playPause(v1, v2) {
       if (v1.paused) {
         v1.play();
@@ -265,7 +280,37 @@
       v1.width = resolution;
       v2.width = resolution;
     }
-    document.getElementsByClassName('tablinks')[1].click()
+
+    function getQueryVariable(variable){
+      var query = window.location.search.substring(1);
+      var vars = query.split("&");
+      for (var i=0;i<vars.length;i++) {
+             var pair = vars[i].split("=");
+             if(pair[0] == variable){return pair[1];}
+      }
+      return false;
+    }
+    // mode=sbs/slide
+    var mode = getQueryVariable("mode");
+    var tagA, tagB
+    if (mode == "sbs") {
+      document.getElementsByClassName('tablinks')[0].click()
+      tagA = "video1"
+      tagB = "video2"
+    } else {
+      document.getElementsByClassName('tablinks')[1].click()
+      tagA = "video3"
+      tagB = "video4"
+    }
+    var videoA = getQueryVariable("VideoA");
+    if (videoA) {
+      playURL(videoA, tagA);
+    }
+    var videoB = getQueryVariable("VideoB");
+    if (videoB) {
+      playURL(videoB, tagB);
+    }
+
   </script>
 
 </body>
