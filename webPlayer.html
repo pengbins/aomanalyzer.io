@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Visionular</title>
+  <title>Visionular web player</title>
 </head>
 
 <body>
@@ -50,19 +50,14 @@
   </div>
   <!-- slide -->
   <!-- ref: https://codemyui.com/video-comparison-slider-animation-using-html5 -->
-
   <div id="slide" class="tabcontent">
-
-    <p>Video: &nbsp;
-      <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"> </span>
-      <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span>
-    </p>
+    <p>VideoA: <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"/> </span>
+    <span>   <- vs ->   </span>
+    VideoB: <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span></p>
     <div id="video-compare-container">
-      <video id="video4">
-      </video>
+      <video id="video4"></video>
       <div id="video-clipper">
-        <video id="video3">
-        </video>
+        <video id="video3"></video>
       </div>
     </div>
 
@@ -74,17 +69,20 @@
           <button onclick="fitWindow()">Enlarge</button>
           <button onclick="makeResA()">Left Size</button>
           <button onclick="makeResB()">Right Size</button>
-        </p>
-        <p>Time:
+          Time:
           <input id="time_value2" type="value"> sec <button onclick="setTime(video3, video4, 'time_value2')">Set
             Time</button>
         </p>
       </font>
     </div>
   </div>
-  <div style="text-align: center" > Powered by <a href="mailto:sandychuangster@gmail.com">Sandy Chuang</a>  </div>
+  <div style="text-align: center" > Powered by <a href="mailto:sandychuangster@gmail.com">Sandy Chuang</a> <a href="https://github.com/pengbins/aomanalyzer.io/blob/master/webPlayer.html">Code</a>  </div>
   <!-- set border -->
   <style>
+    html {
+      overflow: -moz-scrollbars-vertical; 
+      overflow-y: scroll;
+    }
     body {
       background: #FDF5E6;
       margin: 1rem;
@@ -138,7 +136,7 @@
       border: none;
       outline: none;
       cursor: pointer;
-      padding: 14px 16px;
+      padding: 6px 16px;
       transition: 0.3s;
       font-size: 17px;
     }
