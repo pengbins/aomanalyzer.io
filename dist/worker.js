@@ -6,7 +6,7 @@ onmessage = function(e) {
   var retrun;
   console.log(files);
   ffmpeg_run({
-    arguments: ['-v', 'debug','-i', '/input/' + files[0].name, '-vcodec', 'copy', 'out.mp4'],
+    arguments: ['-v', 'panic','-i', '/input/' + files[0].name, '-vcodec', 'copy', 'out.mp4'],
     files: files,
     retrun:retrun
   }, function(results) {
