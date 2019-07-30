@@ -35,10 +35,9 @@
           <button onclick="makeRes(video1, video2, 540)">540</button>
           <button onclick="makeRes(video1, video2, 0)">origin</button>
         </p>
-        <p>Video: &nbsp;
-          <input id="v_file" type="file" onchange="playFile('v_file', 'video1')">
-          <input id="v_file2" type="file" onchange="playFile('v_file2', 'video2')">
-        </p>
+        <p>VideoA: <input id="v_file" type="file" onchange="playFile('v_file', 'video1')"> <span id="video1_size" /> </span>
+          <span>  <- vs ->  </span>
+          VideoB: <input id="v_file2" type="file" onchange="playFile('v_file2', 'video2')"> <span id="video2_size"> </span></p>
         <p> Time:
           <input id="time_value" type="value"> sec <button onclick="setTime(video1, video2, 'time_value')">Set
             Time</button>
@@ -53,7 +52,7 @@
   <!-- ref: https://codemyui.com/video-comparison-slider-animation-using-html5 -->
   <div id="slide" class="tabcontent">
     <p>VideoA: <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"/> </span>
-    <span>   <- vs ->   </span>
+    <span>   <- vs ->  </span>
     VideoB: <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span></p>
     <div id="video-compare-container">
       <video id="video4"></video>
@@ -220,11 +219,33 @@
       }, false);
     }
 
-    function playFile(id, tag) {
+    function playIVF(id, tag) {
       fitWindow();
+      var worker = new Worker('dist/worker.js');
+      worker.addEventListener('message', function (e) {
+        console.log('Worker said: ', e.data);
+        playURL(e.data, tag);
+      }, false);
+
+      var files = document.getElementById(id).files;
+      worker.postMessage(files);
+    }
+
+    function playFile(id, tag) {
       var file = document.getElementById(id).files[0];
-      var url = URL.createObjectURL(file);
-      playURL(url, tag);
+      if (!file) {
+        return;
+      }
+      fitWindow();
+      var index = file.name.lastIndexOf(".");
+      var ext = file.name.substr(index + 1);
+      console.log(file.name, ext);
+      if (ext === 'ivf') {
+        playIVF(id, tag);
+      } else {
+        var url = URL.createObjectURL(file);
+        playURL(url, tag);
+      }
     }
 
     function playPause(v1, v2) {
