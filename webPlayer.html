@@ -17,10 +17,10 @@
   <div id="sidebyside" class="tabcontent">
     <div style="text-align:center">
       <br><br>
-      <video id="video1" width="720" controls style="vertical-align:left;">
+      <video id="video1" width="720" onplay="playV(video2)" onpause="pauseV(video2)" controls style="vertical-align:left;">
         Your browser does not support the video tag.
       </video>
-      <video id="video2" width="720" controls style="vertical-align:right;">
+      <video id="video2" width="720" onplay="playV(video1)" onpause="pauseV(video1)" controls style="vertical-align:right;">
         Your browser does not support the video tag.
       </video>
     </div>
@@ -54,10 +54,10 @@
     <p>VideoA: <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"/> </span>
     <span>   <- vs ->  </span>
     VideoB: <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span></p>
-    <div id="video-compare-container">
-      <video id="video4"></video>
+    <div id="video-compare-container" >
+      <video id="video4" onplay="playV(video3)" onpause="pauseV(video3)"></video>
       <div id="video-clipper">
-        <video id="video3"></video>
+        <video id="video3" onplay="playV(video4)" onpause="pauseV(video4)"></video>
       </div>
     </div>
 
@@ -247,15 +247,26 @@
         playURL(url, tag);
       }
     }
-
+    function playV(v1) {
+      v1.play();
+    }
+    function pauseV(v1) {
+      v1.pause();
+    }
+    
+    function seekedV(src, tgt) {
+      tgt.currentTime = src.currentTime;
+    }
     function playPause(v1, v2) {
       if (v1.paused) {
+        v2.currentTime = v1.currentTime;
         v1.play();
         v2.play();
       }
       else {
         v1.pause();
         v2.pause();
+        v2.currentTime = v1.currentTime;
       }
     }
 
