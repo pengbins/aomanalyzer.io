@@ -51,9 +51,10 @@
   <!-- slide -->
   <!-- ref: https://codemyui.com/video-comparison-slider-animation-using-html5 -->
   <div id="slide" class="tabcontent">
-    <p>VideoA: <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"/> </span>
+    <p style="text-align:center" >
+      VideoA: <input id="v_file3" type="file" onchange="playFile('v_file3', 'video3')"> <span id="video3_size"/> </span>
     <span>   <- vs ->  </span>
-    VideoB: <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span></p>
+      VideoB: <input id="v_file4" type="file" onchange="playFile('v_file4', 'video4')"> <span id="video4_size"> </span></p>
     <div id="video-compare-container" >
       <video id="video4" onplay="playV(video3)" onpause="pauseV(video3)"></video>
       <div id="video-clipper">
@@ -63,15 +64,16 @@
 
     <div>
       <font color=#AAAAAA>
-        <p>Control
+        <p style="text-align:center" >Control
           <button onclick="playPause(video3, video4)">Play/Pause</button>
           <button onclick="stop(video3, video4)">Stop</button>
           <button onclick="fitWindow()">Enlarge</button>
           <button onclick="makeResA()">Left Size</button>
           <button onclick="makeResB()">Right Size</button>
           Time:
-          <input id="time_value2" type="value"> sec <button onclick="setTime(video3, video4, 'time_value2')">Set
-            Time</button>
+          <input id="time_value2" type="value"/> sec 
+          <button onclick="setTime(video3, video4, 'time_value2')">Set Time</button>
+          <button id="videoonly" onclick="onVideoOnly()">video only</button>
         </p>
       </font>
     </div>
@@ -199,8 +201,16 @@
     videoContainer.addEventListener("touchstart", trackLocation, false);
     videoContainer.addEventListener("touchmove", trackLocation, false);
     var videoRatio = {"video3":"100%", "video4": "100%" };
+
+    function onVideoOnly() {
+      videoonly = !videoonly;
+      var btn = document.getElementById("videoonly")
+      btn.innerHTML = videoonly ? "with audio" : "video only";
+      playFile('v_file3', 'video3')
+      playFile('v_file4', 'video4')
+    }
+
     // Player controller
-    
     function playURL(url, tag){
       console.log(url);
       var v = document.getElementById(tag)
@@ -228,6 +238,7 @@
       }, false);
 
       var files = document.getElementById(id).files;
+      console.log('msg: ', files);
       worker.postMessage(files);
     }
 
@@ -240,7 +251,7 @@
       var index = file.name.lastIndexOf(".");
       var ext = file.name.substr(index + 1);
       console.log(file.name, ext);
-      if (ext === 'ivf') {
+      if (ext === 'ivf' || videoonly) {
         playIVF(id, tag);
       } else {
         var url = URL.createObjectURL(file);
@@ -324,6 +335,8 @@
     }
     // mode=sbs/slide
     var mode = getQueryVariable("mode");
+    var videoonly = getQueryVariable("videoonly");
+    
     var tagA, tagB
     if (mode == "sbs") {
       document.getElementsByClassName('tablinks')[0].click()
