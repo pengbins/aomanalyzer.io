@@ -1571,6 +1571,7 @@ function readFrameFromJson(json) {
     uncompress(json["dualFilterType"]);
     uncompress(json["delta_q"]);
     uncompress(json["seg_id"]);
+    uncompress(json["motion_mode"]);
     var frame = new AnalyzerFrame();
     frame.json = json;
     frame.accounting = getAccountingFromJson(json, "symbols");
@@ -2181,7 +2182,7 @@ exports.palette = {
         RESTORE_NONE: "#00d041",
         RESTORE_WIENER: "#4eb7a0",
         RESTORE_SGRPROJ: "#b459c0",
-        RESTORE_SWITCHABLE: "#77b84b",
+        RESTORE_SWITCHABLE: "#77b84b"
     },
     dualFilterType: {
         REG_REG: "#c95f3f",
@@ -2193,6 +2194,11 @@ exports.palette = {
         SHARP_REG: "#6f7dcb",
         SHARP_SMOOTH: "#c29743",
         SHARP_SHARP: "#c06d93"
+    },
+    motion_mode: {
+        SIMPLE_TRANSLATION: "#00d041",
+        OBMC_CAUSAL: "#6f7dcb",
+        WARPED_CAUSAL: "#b459c0",
     }
 };
 function getColor(name, palette) {
@@ -13109,6 +13115,13 @@ var AnalyzerView = /** @class */ (function (_super) {
                 default: false,
                 value: undefined
             },
+            showMotionMode: {
+                key: "j",
+                description: "Motion mode",
+                detail: "Display Motion modes.",
+                default: false,
+                value: undefined
+            },
             showTileGrid: {
                 key: "l",
                 description: "Tiles",
@@ -13130,6 +13143,7 @@ var AnalyzerView = /** @class */ (function (_super) {
             showSkip: false,
             showCDEF: false,
             showLoopRes: false,
+            showMotionMode: false,
             showMode: false,
             showUVMode: false,
             showSegment: false,
@@ -13259,6 +13273,7 @@ var AnalyzerView = /** @class */ (function (_super) {
         this.state.showBits && this.drawBits(frame, ctx, src, dst);
         this.state.showCDEF && this.drawCDEF(frame, ctx, src, dst);
         this.state.showLoopRes && this.drawLoopRes(frame, ctx, src, dst);
+        this.state.showMotionMode && this.drawMotionMode(frame, ctx, src, dst);
         this.state.showTransformType && this.drawTransformType(frame, ctx, src, dst);
         this.state.showMotionVectors && this.drawMotionVectors(frame, ctx, src, dst);
         this.state.showReferenceFrames && this.drawReferenceFrames(frame, ctx, src, dst);
@@ -13937,6 +13952,19 @@ var AnalyzerView = /** @class */ (function (_super) {
             ctx.fillStyle = analyzerTools_1.getColor(loopresMapByValue[loopResGrid[r][c]], analyzerTools_1.palette.loopResType);
             return true;
         }, VisitMode.SuperBlock);
+    };
+    AnalyzerView.prototype.drawMotionMode = function (frame, ctx, src, dst) {
+        var motionModeGrid = frame.json["motion_mode"];
+        if (!motionModeGrid)
+            return;
+        var colorMap = analyzerTools_1.reverseMap(frame.json["motion_modeMap"]);
+        this.fillBlock(frame, ctx, src, dst, function (blockSize, c, r, sc, sr) {
+            var mm = motionModeGrid[r][c];
+            if (mm == 3)
+                return false;
+            ctx.fillStyle = analyzerTools_1.getColor(colorMap[mm], analyzerTools_1.palette.motion_mode);
+            return true;
+        });
     };
     AnalyzerView.prototype.drawCDEF = function (frame, ctx, src, dst) {
         var skipGrid = frame.json["skip"];
