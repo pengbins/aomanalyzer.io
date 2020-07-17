@@ -145,7 +145,7 @@
         for (let i = 0; i < range; i++) {
           sum +=  data[a+i][1];
         }
-        var size = sum *8.0/1000;
+        var size = sum *8.0;
         adata.push(  [time, size] );
       }
       return adata;
@@ -204,7 +204,7 @@
         },
         yAxis: {
           title: {
-            text: 'bitrate (kbps)'
+            text: 'bitrate (bps)'
           }
         },
         series: series
