@@ -5,7 +5,7 @@ Based on https://github.com/mbebenita/aomanalyzer.
 
 demo: https://pengbins.github.io/aomanalyzer.io/
  
-[Sample ivf file](https://people.xiph.org/~mbebenita/analyzer/output.ivf)
+[Sample ivf file](https://raw.githubusercontent.com/pengbins/aomanalyzer.io/master/img/Johnny_1280x720.ivf)
 
 webplayer: https://pengbins.github.io/aomanalyzer.io/webPlayer.html
  
