@@ -12,6 +12,7 @@ Based on https://github.com/mbebenita/aomanalyzer.
 
  
  * Load local bitstream file
+ 
  ![howto](https://github.com/pengbins/aomanalyzer.io/blob/master/img/aomanalyzer.gif)
  
  
