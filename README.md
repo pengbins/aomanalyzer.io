@@ -10,6 +10,7 @@ Based on https://github.com/mbebenita/aomanalyzer.
 
 * Load online ivf [file](https://pengbins.github.io/aomanalyzer.io/?decoder=inspect.js&file=https://raw.githubusercontent.com/pengbins/aomanalyzer.io/master/img/Johnny_1280x720.ivf)
 
+Just apped ivf file url to `https://pengbins.github.io/aomanalyzer.io/?decoder=inspect.js&file=` .
  
  * Load local bitstream file
  
