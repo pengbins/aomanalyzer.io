@@ -39,8 +39,7 @@
           <span>  <- vs ->  </span>
           VideoB: <input id="v_file2" type="file" onchange="playFile('v_file2', 'video2')"> <span id="video2_size"> </span></p>
         <p> Time:
-          <input id="time_value" type="value"> sec <button onclick="setTime(video1, video2, 'time_value')">Set
-            Time</button>
+          <input id="time_value" type="value"> sec <button onclick="setTime(video1, video2, 'time_value')">Set Time</button>
         </p>
         <p> Player width:
           <input id="player_value" type="value"> px <button onclick="setRes(video1, video2)">Set Resolution</button>
@@ -227,6 +226,9 @@
         videoRatio[tag] = ratio.toFixed(0) + "%";
         console.log("v: ", width, height, tag, winWidth, videoRatio[tag] );
       }, false);
+      v.addEventListener("error", function (e) {
+        v.poster = url;
+      }, true);
     }
 
     function playIVF(id, tag) {
