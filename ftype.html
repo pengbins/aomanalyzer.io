@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Visionular bitrate viewer</title>
+  <title>Visionular frame type viewer</title>
   <style>
     .highcharts-figure, .highcharts-data-table table {
       min-width: 360px; 
@@ -64,7 +64,7 @@
     VideoB: <input id="v_file_B" type="file" onchange="playFile('v_file_B', 'videoB')" />
     VideoC: <input id="v_file_C" type="file" onchange="playFile('v_file_C', 'videoC')" />
     VideoD: <input id="v_file_D" type="file" onchange="playFile('v_file_D', 'videoD')" />
-    AvgWin: <input id="avgwin" value='150' /> <input id="avgwinBtn" type="button" value="Update" onclick="updateAvgWin()" />
+    
     <input id="playall" type="button" value="Play All" onclick="playall()" />
   </div>
 <figure class="highcharts-figure">
@@ -73,7 +73,7 @@
 <script>
     var series = [];
     var pktsize_datas = [];
-    var avgWin = 150;
+    var avgWin = 1;
     var query = window.location.search.substring(1);
     var vars = query.split("&");
     console.log('vars: ', vars, 'len', vars.length);
@@ -128,53 +128,23 @@
         var items = line.split(',');
         if (items[0] === "packet") {
           var time = parseFloat(items[1]);
-          var size = parseInt(items[2]);
-          data.push( [time, size] );
+          var ftype = items[2].startsWith('K') ? 100 : 0;
+          data.push( [time, ftype] );
         }
       }
       return data;
     }
-    function calcAvgBitrate(data, range){
-      if (data.length / range < 10) {
-        range = Math.ceil(data.length / 10);
-      }
-      var adata = [];
-      for (let a = 0; a < data.length-range; a+= range) {
-        var time = data[a][0];
-        var sum = 0;
-        for (let i = 0; i < range; i++) {
-          sum +=  data[a+i][1];
-        }
-        var size = sum *8.0;
-        adata.push(  [time, size] );
-      }
-      return adata;
-    }
-    function updateAvgWin() {
-      var t = document.getElementById('avgwin')
-      console.log('msg: ', t.value);
-      avgWin = parseInt(t.value);
-      series = [];
-      for ( var seq of pktsize_datas ) {
-        var data = calcAvgBitrate(seq.data, avgWin);
-        var newSeries = {
-          name: seq.name,
-          data: data
-        };
-        series.push(newSeries);
-      }
-      updateChart();
-    }
+
     function getPkts(file) {
-        var worker = new Worker('dist/probe_worker.js');
+        var worker = new Worker('dist/ftype_worker.js');
         worker.addEventListener('message', function (e) {
           var data = parseCSV(e.data.results);
+          console.log('csv: ', e.data.results);
           var newData = {
             name: e.data.name,
             data: data
           };
           pktsize_datas.push(newData);
-          data = calcAvgBitrate(data, avgWin);
           var newSeries = {
             name: e.data.name,
             data:data
@@ -182,7 +152,7 @@
           series.push(newSeries);
           updateChart();
         }, false);
-        //console.log('msg: ', file);
+        console.log('msg: ', file);
         worker.postMessage(file);
       }
 
@@ -193,7 +163,7 @@
           type: 'line'
         },
         title: {
-          text: 'video bitrate over time'
+          text: 'video key frame position'
         },
         subtitle: {
           text: document.ontouchstart === undefined ?
@@ -204,7 +174,7 @@
         },
         yAxis: {
           title: {
-            text: 'bitrate (bps)'
+            text: 'is keyframe'
           }
         },
         series: series
