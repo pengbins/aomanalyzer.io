@@ -66,6 +66,7 @@
     VideoD: <input id="v_file_D" type="file" onchange="playFile('v_file_D', 'videoD')" />
     AvgWin: <input id="avgwin" value='150' /> <input id="avgwinBtn" type="button" value="Update" onclick="updateAvgWin()" />
     <input id="playall" type="button" value="Play All" onclick="playall()" />
+    Video/Audio: <input id="stream"  type="checkbox" checked onclick="SelectStream()"/>
   </div>
 <figure class="highcharts-figure">
   <div id="container"></div>
@@ -77,6 +78,7 @@
     var query = window.location.search.substring(1);
     var vars = query.split("&");
     console.log('vars: ', vars, 'len', vars.length);
+    var stream = 'v';
     function loadUrl(idx) {
       var pair = vars[idx].split("=");
       if (pair.length <2) {
@@ -165,6 +167,10 @@
       }
       updateChart();
     }
+    function SelectStream() {
+      stream = stream =='a' ? 'v' : 'a';
+      //console.log('msg: ', stream);
+    }
     function getPkts(file) {
         var worker = new Worker('dist/probe_worker.js');
         worker.addEventListener('message', function (e) {
@@ -183,7 +189,7 @@
           updateChart();
         }, false);
         //console.log('msg: ', file);
-        worker.postMessage(file);
+        worker.postMessage({file:file, stream:stream });
       }
 
     function updateChart () {

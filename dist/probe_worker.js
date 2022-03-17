@@ -2,10 +2,12 @@ self.importScripts('ffprobe.js');
 
 
 onmessage = function(e) {
-  var file = e.data;
+  var data = e.data;
+  var file = data.file;
   var name = file.name;
+  var stream = data.stream;
   ffprobe_run({
-    arguments: ['-v', 'error', '-select_streams', 'v', '-show_entries', 'packet=dts_time,size : stream=index,codec_type', '-of', 'csv', '/input/' + file.name],
+    arguments: ['-v', 'error', '-select_streams', stream, '-show_entries', 'packet=dts_time,size : stream=index,codec_type', '-of', 'csv', '/input/' + file.name],
     files: [file],
     noExitRuntime: true,
     onExit: function () { console.log("on exit"); },
