@@ -64,7 +64,7 @@
     VideoB: <input id="v_file_B" type="file" onchange="playFile('v_file_B', 'videoB')" />
     VideoC: <input id="v_file_C" type="file" onchange="playFile('v_file_C', 'videoC')" />
     VideoD: <input id="v_file_D" type="file" onchange="playFile('v_file_D', 'videoD')" />
-    AvgWin: <input id="avgwin" value='150' /> <input id="avgwinBtn" type="button" value="Update" onclick="updateAvgWin()" />
+    AvgWin: <input id="avgwin" value='1' /> <input id="avgwinBtn" type="button" value="Update" onclick="updateAvgWin()" />
     <input id="playall" type="button" value="Play All" onclick="playall()" />
     Video/Audio: <input id="stream"  type="checkbox" checked onclick="SelectStream()"/>
   </div>
@@ -74,10 +74,11 @@
 <script>
     var series = [];
     var pktsize_datas = [];
-    var avgWin = 150;
+    var t = document.getElementById('avgwin');
+    var  avgWin = parseInt(t.value);
     var query = window.location.search.substring(1);
     var vars = query.split("&");
-    console.log('vars: ', vars, 'len', vars.length);
+    // console.log('vars: ', vars, 'len', vars.length);
     var stream = 'v';
     function loadUrl(idx) {
       var pair = vars[idx].split("=");
@@ -93,7 +94,7 @@
           video.src = URL.createObjectURL(myBlob);
           const vfile = new window.File([myBlob], name, { type: myBlob.type })
           console.log('name: ', name, 'blob', vfile);
-          getPkts(vfile);
+          getPkts(vfile, pair[0]);
           if (idx < vars.length - 1) {
             loadUrl(idx+1)
           }
@@ -121,7 +122,7 @@
       }
       var v = document.getElementById(tag)
       v.src = URL.createObjectURL(file);
-      getPkts(file);
+      getPkts(file, id);
     }
     function parseCSV(str) {
       var data = [];
@@ -131,34 +132,40 @@
         if (items[0] === "packet") {
           var time = parseFloat(items[1]);
           var size = parseInt(items[2]);
-          data.push( [time, size] );
+          var flags = items[3];
+          if (flags && flags.startsWith('K')) {
+            data.push( {x:time, y:size, color: "red", marker: { enabled: true}} );
+          } else {
+            data.push( [time, size] );
+          } 
         }
       }
       return data;
     }
+
     function calcAvgBitrate(data, range){
+      if (range <= 1) return data;
       if (data.length / range < 10) {
         range = Math.ceil(data.length / 10);
       }
-      var adata = [];
+      var avg_data = [];
       for (let a = 0; a < data.length-range; a+= range) {
-        var time = data[a][0];
+        var time = ('x'in data[a]) ? data[a].x :data[a][0];
         var sum = 0;
         for (let i = 0; i < range; i++) {
-          sum +=  data[a+i][1];
+          sum += ('y' in data[a+i] ?data[a+i].y : data[a+i][1]);
         }
         var size = sum *8.0;
-        adata.push(  [time, size] );
+        avg_data.push(  [time, size] );
       }
-      return adata;
+      return avg_data;
     }
     function updateAvgWin() {
       var t = document.getElementById('avgwin')
-      console.log('msg: ', t.value);
       avgWin = parseInt(t.value);
       series = [];
       for ( var seq of pktsize_datas ) {
-        var data = calcAvgBitrate(seq.data, avgWin);
+        var data = (avgWin > 1) ? calcAvgBitrate(seq.data, avgWin) : seq.data;
         var newSeries = {
           name: seq.name,
           data: data
@@ -171,26 +178,29 @@
       stream = stream =='a' ? 'v' : 'a';
       //console.log('msg: ', stream);
     }
-    function getPkts(file) {
-        var worker = new Worker('dist/probe_worker.js');
-        worker.addEventListener('message', function (e) {
-          var data = parseCSV(e.data.results);
-          var newData = {
-            name: e.data.name,
-            data: data
-          };
-          pktsize_datas.push(newData);
-          data = calcAvgBitrate(data, avgWin);
-          var newSeries = {
-            name: e.data.name,
-            data:data
-          };
-          series.push(newSeries);
-          updateChart();
-        }, false);
-        //console.log('msg: ', file);
-        worker.postMessage({file:file, stream:stream });
-      }
+    function getPkts(file, vid) {
+      var worker = new Worker('dist/probe_worker.js');
+      worker.addEventListener('message', function (e) {
+        var csvData = parseCSV(e.data.results);
+        var newData = {
+          name: e.data.name,
+          data: csvData
+        };
+        pktsize_datas.push(newData);
+        console.log("getPkts", newData.data[0]);
+
+        var lineData = calcAvgBitrate(csvData, avgWin);
+        var newSeries = {
+          name: e.data.name,
+          data:lineData,
+          id: vid,
+        };
+        series.push(newSeries);
+        updateChart();
+      }, false);
+      //console.log('msg: ', file);
+      worker.postMessage({file:file, stream:stream });
+    }
 
     function updateChart () {
       Highcharts.chart('container', {
@@ -205,17 +215,22 @@
           text: document.ontouchstart === undefined ?
             'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
         },
+        tooltip: {
+          crosshairs: true,
+          shared: true
+        },
         xAxis: {
           type: 'float'
         },
         yAxis: {
           title: {
-            text: 'bitrate (bps)'
+            text: avgWin > 1 ? 'bitrate (bps)' : "pkg size(Bytes)"
           }
         },
         series: series
       });
     }
+    updateChart();
 </script>
 
 </body>
