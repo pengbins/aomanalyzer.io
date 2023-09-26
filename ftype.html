@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Visionular frame type viewer</title>
+  <style>
+    .highcharts-figure, .highcharts-data-table table {
+      min-width: 360px; 
+      max-width: 100%;
+      margin: 1em auto;
+    }
+    .highcharts-data-table table {
+      font-family: Verdana, sans-serif;
+      border-collapse: collapse;
+      border: 1px solid #EBEBEB;
+      margin: 10px auto;
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+    }
+    .highcharts-data-table caption {
+      padding: 1em 0;
+      font-size: 1.2em;
+      color: #555;
+    }
+    .highcharts-data-table th {
+      font-weight: 600;
+      padding: 0.5em;
+    }
+    .highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
+      padding: 0.5em;
+    }
+    .highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
+      background: #f8f8f8;
+    }
+    .highcharts-data-table tr:hover {
+      background: #f1f7ff;
+    }
+  </style>
+</head>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<body>
+  <div>
+  <video id="videoA" width="480" controls style="vertical-align:left;">
+    Your browser does not support the video tag.
+  </video>
+  <video id="videoB" width="480" controls style="vertical-align:left;">
+    Your browser does not support the video tag.
+  </video>
+  <video id="videoC" width="480" controls style="vertical-align:left;">
+    Your browser does not support the video tag.
+  </video>
+  <video id="videoD" width="480" controls style="vertical-align:left;">
+    Your browser does not support the video tag.
+  </video>
+  </div>
+  <div>
+    VideoA: <input id="v_file_A" type="file" onchange="playFile('v_file_A', 'videoA')" />
+    VideoB: <input id="v_file_B" type="file" onchange="playFile('v_file_B', 'videoB')" />
+    VideoC: <input id="v_file_C" type="file" onchange="playFile('v_file_C', 'videoC')" />
+    VideoD: <input id="v_file_D" type="file" onchange="playFile('v_file_D', 'videoD')" />
+    
+    <input id="playall" type="button" value="Play All" onclick="playall()" />
+  </div>
+<figure class="highcharts-figure">
+  <div id="container"></div>
+</figure>
+<script>
+    var series = [];
+    var pktsize_datas = [];
+    var avgWin = 1;
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    console.log('vars: ', vars, 'len', vars.length);
+    function loadUrl(idx) {
+      var pair = vars[idx].split("=");
+      if (pair.length <2) {
+        return;
+      }
+      var video = document.getElementById(pair[0])
+      var names = pair[1].split('/');
+      var name = names[ names.length -1 ];
+      fetch(pair[1])
+        .then(r => r.blob())
+        .then(myBlob => {
+          video.src = URL.createObjectURL(myBlob);
+          const vfile = new window.File([myBlob], name, { type: myBlob.type })
+          console.log('name: ', name, 'blob', vfile);
+          getPkts(vfile);
+          if (idx < vars.length - 1) {
+            loadUrl(idx+1)
+          }
+        });
+    }
+    if (vars.length >= 1) {
+        loadUrl(0);
+    }
+    var videoTags = ['videoA', 'videoB', 'videoC', 'videoD'];
+    var videos = [];
+    for (var tag of videoTags) {
+         var v = document.getElementById(tag)
+         videos.push(v);
+    }
+    function playall() {
+      for (var v of videos) {
+        v.play();
+      }
+      //setInterval(updateChart, 1000);
+    }
+    function playFile(id, tag) {
+      var file = document.getElementById(id).files[0];
+      if (!file) {
+        return;
+      }
+      var v = document.getElementById(tag)
+      v.src = URL.createObjectURL(file);
+      getPkts(file);
+    }
+    function parseCSV(str) {
+      var data = [];
+      var lines = str.split('\n');
+      for (var line of lines) {
+        var items = line.split(',');
+        if (items[0] === "packet") {
+          var time = parseFloat(items[1]);
+          var ftype = items[2].startsWith('K') ? 100 : 0;
+          data.push( [time, ftype] );
+        }
+      }
+      return data;
+    }
+
+    function getPkts(file) {
+        var worker = new Worker('dist/ftype_worker.js');
+        worker.addEventListener('message', function (e) {
+          var data = parseCSV(e.data.results);
+          console.log('csv: ', e.data.results);
+          var newData = {
+            name: e.data.name,
+            data: data
+          };
+          pktsize_datas.push(newData);
+          var newSeries = {
+            name: e.data.name,
+            data:data
+          };
+          series.push(newSeries);
+          updateChart();
+        }, false);
+        console.log('msg: ', file);
+        worker.postMessage(file);
+      }
+
+    function updateChart () {
+      Highcharts.chart('container', {
+        chart: {
+          zoomType: 'x',
+          type: 'line'
+        },
+        title: {
+          text: 'video key frame position'
+        },
+        subtitle: {
+          text: document.ontouchstart === undefined ?
+            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+        },
+        xAxis: {
+          type: 'float'
+        },
+        yAxis: {
+          title: {
+            text: 'is keyframe'
+          }
+        },
+        series: series
+      });
+    }
+</script>
+
+</body>
+
+</html>
