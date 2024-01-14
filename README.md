@@ -1,7 +1,7 @@
 # aomanalyzer.io
 AV1 Bitstream Analyzer in web page for local ivf bitstream 
 
-Based on https://github.com/mbebenita/aomanalyzer.
+Based on https://github.com/xiph/aomanalyzer .
 
 * demo: https://pengbins.github.io/aomanalyzer.io/
  
@@ -18,3 +18,5 @@ Just apped ivf file url to `https://pengbins.github.io/aomanalyzer.io/?decoder=i
  
  
 webplayer: https://pengbins.github.io/aomanalyzer.io/webPlayer.html
+
+## [Change Log](/CHANGELOG.md)
