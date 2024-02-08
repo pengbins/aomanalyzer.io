@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.1] - 2024-02-08
+
+- Bugfix: Bits accounting not show in Frame Info tab.
 
 ## [0.1.0] - 2024-01-14
 
