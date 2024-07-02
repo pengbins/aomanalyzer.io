@@ -67,6 +67,7 @@
     AvgWin: <input id="avgwin" value='1' /> <input id="avgwinBtn" type="button" value="Update" onclick="updateAvgWin()" />
     <input id="playall" type="button" value="Play All" onclick="playall()" />
     Video/Audio: <input id="stream"  type="checkbox" checked onclick="SelectStream()"/>
+    ShowKeyframe: <input id="Key"  type="checkbox" checked onclick="ToggleShowKeyframe()"/>
   </div>
 <figure class="highcharts-figure">
   <div id="container"></div>
@@ -80,6 +81,7 @@
     var vars = query.split("&");
     // console.log('vars: ', vars, 'len', vars.length);
     var stream = 'v';
+    var showKeyFrame = true;
     function loadUrl(idx) {
       var pair = vars[idx].split("=");
       if (pair.length <2) {
@@ -133,7 +135,7 @@
           var time = parseFloat(items[1]);
           var size = parseInt(items[2]);
           var flags = items[3];
-          if (flags && flags.startsWith('K')) {
+          if (showKeyFrame && flags && flags.startsWith('K')) {
             data.push( {x:time, y:size, color: "red", marker: { enabled: true}} );
           } else {
             data.push( [time, size] );
@@ -178,6 +180,9 @@
       stream = stream =='a' ? 'v' : 'a';
       //console.log('msg: ', stream);
     }
+    function ToggleShowKeyframe() {
+      showKeyFrame = !showKeyFrame;
+    }
     function getPkts(file, vid) {
       var worker = new Worker('dist/probe_worker.js');
       worker.addEventListener('message', function (e) {
@@ -187,7 +192,7 @@
           data: csvData
         };
         pktsize_datas.push(newData);
-        console.log("getPkts", newData.data[0]);
+        console.log("getPkts", newData.data[0],newData.data.length );
 
         var lineData = calcAvgBitrate(csvData, avgWin);
         var newSeries = {
