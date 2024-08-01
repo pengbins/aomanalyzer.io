@@ -1,6 +1,8 @@
 # aomanalyzer.io
 AV1 Bitstream Analyzer in web page for local ivf bitstream 
 
+This is a Client-side tool: files are processed locally in your browser and not uploaded to any server
+
 Based on https://github.com/xiph/aomanalyzer .
 
 * demo: https://pengbins.github.io/aomanalyzer.io/
