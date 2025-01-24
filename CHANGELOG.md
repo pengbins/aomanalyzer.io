@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.2] - 2025-01-24
+
+- Feature: Support load mp4/avi/ts files
+
 ## [0.1.1] - 2024-02-08
 
 - Bugfix: Bits accounting not show in Frame Info tab.
