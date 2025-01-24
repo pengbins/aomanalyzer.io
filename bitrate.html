@@ -129,13 +129,14 @@
     function parseCSV(str) {
       var data = [];
       var lines = str.split('\n');
+      var showMarker = showKeyFrame && (lines.length < 6000);
       for (var line of lines) {
         var items = line.split(',');
         if (items[0] === "packet") {
           var time = parseFloat(items[1]);
           var size = parseInt(items[2]);
           var flags = items[3];
-          if (showKeyFrame && flags && flags.startsWith('K')) {
+          if (showMarker && flags && flags.startsWith('K')) {
             data.push( {x:time, y:size, color: "red", marker: { enabled: true}} );
           } else {
             data.push( [time, size] );
@@ -170,7 +171,8 @@
         var data = (avgWin > 1) ? calcAvgBitrate(seq.data, avgWin) : seq.data;
         var newSeries = {
           name: seq.name,
-          data: data
+          data: data,
+          turboThreshold: 5000
         };
         series.push(newSeries);
       }
