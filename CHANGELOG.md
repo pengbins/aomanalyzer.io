@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.3] - 2025-11-05
+
+- Feature: Support load mkv files
+
 ## [0.1.2] - 2025-01-24
 
 - Feature: Support load mp4/avi/ts files
