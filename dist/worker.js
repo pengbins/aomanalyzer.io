@@ -6,11 +6,12 @@ onmessage = function(e) {
   var retrun;
   console.log(files, typeof(files));
   ffmpeg_run({
-    arguments: ['-v', 'panic', '-i', '/input/' + files[0].name, '-vcodec', 'copy', "-an",'out.mp4'],
+    arguments: ['-v', 'debug',   '-i', '/input/' + files[0].name, '-vsync', '0', '-vcodec', 'copy', "-an",'out.mp4'],
     files: files,
     retrun:retrun
   }, function(results) {
-    var blob = new Blob([results[0].data], {type: "video/mp4"});
+    var ofile = results.outfile[0];
+    var blob = new Blob([ofile.data], {type: "video/mp4"});
     var blobURL = URL.createObjectURL(blob);
     self.postMessage(blobURL);
   });

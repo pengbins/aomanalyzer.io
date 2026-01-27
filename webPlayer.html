@@ -231,7 +231,7 @@
       }, true);
     }
 
-    function playIVF(id, tag) {
+    function playRaw(id, tag) {
       fitWindow();
       var worker = new Worker('dist/worker.js');
       worker.addEventListener('message', function (e) {
@@ -253,8 +253,8 @@
       var index = file.name.lastIndexOf(".");
       var ext = file.name.substr(index + 1);
       console.log(file.name, ext);
-      if (ext === 'ivf' || videoonly) {
-        playIVF(id, tag);
+      if (ext === 'ivf' || ext === '264' || ext === '265' || videoonly) {
+        playRaw(id, tag);
       } else {
         var url = URL.createObjectURL(file);
         playURL(url, tag);
