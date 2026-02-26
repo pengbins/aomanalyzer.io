@@ -1,19 +1,29 @@
 self.importScripts('ffprobe.js');
 
 
-onmessage = function(e) {
+onmessage = function (e) {
   var data = e.data;
   var file = data.file;
   var name = file.name;
-  var stream = data.stream;
+
+  var args = ['-v', 'error'];
+  if (data.stream) {
+    args.push('-select_streams', data.stream);
+  }
+  //'packet=dts_time,size,flags : stream=index,codec_type',
+  if (data.entries) {
+    args.push('-show_entries', data.entries);
+  }
+  args.push('-of', 'csv', '/input/' + file.name);
+
   ffprobe_run({
-    arguments: ['-v', 'error', '-select_streams', stream, '-show_entries', 'packet=dts_time,size,flags : stream=index,codec_type', '-of', 'csv', '/input/' + file.name],
+    arguments: args,
     files: [file],
     noExitRuntime: true,
     onExit: function () { console.log("on exit"); },
     postRun: function () { console.log("post Run"); }
   }, function (results) {
-      //console.log(results);
-      self.postMessage( {name: name, results:results});
+    //console.log(results);
+    self.postMessage({ name: name, results: results });
   });
 }

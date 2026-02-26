@@ -4,11 +4,13 @@
 <head>
   <title>Visionular bitrate viewer</title>
   <style>
-    .highcharts-figure, .highcharts-data-table table {
-      min-width: 360px; 
+    .highcharts-figure,
+    .highcharts-data-table table {
+      min-width: 360px;
       max-width: 100%;
       margin: 1em auto;
     }
+
     .highcharts-data-table table {
       font-family: Verdana, sans-serif;
       border-collapse: collapse;
@@ -18,79 +20,70 @@
       width: 100%;
       max-width: 500px;
     }
+
     .highcharts-data-table caption {
       padding: 1em 0;
       font-size: 1.2em;
       color: #555;
     }
+
     .highcharts-data-table th {
       font-weight: 600;
       padding: 0.5em;
     }
-    .highcharts-data-table td, .highcharts-data-table th, .highcharts-data-table caption {
+
+    .highcharts-data-table td,
+    .highcharts-data-table th,
+    .highcharts-data-table caption {
       padding: 0.5em;
     }
-    .highcharts-data-table thead tr, .highcharts-data-table tr:nth-child(even) {
+
+    .highcharts-data-table thead tr,
+    .highcharts-data-table tr:nth-child(even) {
       background: #f8f8f8;
     }
+
     .highcharts-data-table tr:hover {
       background: #f1f7ff;
     }
   </style>
 </head>
 
-
 <script src="https://cdn.jsdelivr.net/npm/highcharts@12.5.0/highcharts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highcharts@12.5.0/modules/data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highcharts@12.5.0/modules/exporting.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highcharts@12.5.0/modules/export-data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/highcharts@12.5.0/modules/accessibility.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.5.0/modules/xrange.js"></script>
+
 <body>
-  <div>
-  <video id="videoA" width="480" controls style="vertical-align:left;">
-    Your browser does not support the video tag.
-  </video>
-  <video id="videoB" width="480" controls style="vertical-align:left;">
-    Your browser does not support the video tag.
-  </video>
-  <video id="videoC" width="480" controls style="vertical-align:left;">
-    Your browser does not support the video tag.
-  </video>
-  <video id="videoD" width="480" controls style="vertical-align:left;">
-    Your browser does not support the video tag.
-  </video>
+  <div style="text-align: center;">
+    <video id="videoA" width="480" controls style="vertical-align:left; max-height: 50vh;">
+      Your browser does not support the video tag.
+    </video>
   </div>
-  <div>
-    VideoA: <input id="v_file_A" type="file" onchange="playFile('v_file_A', 'videoA')" />
-    VideoB: <input id="v_file_B" type="file" onchange="playFile('v_file_B', 'videoB')" />
-    VideoC: <input id="v_file_C" type="file" onchange="playFile('v_file_C', 'videoC')" />
-    VideoD: <input id="v_file_D" type="file" onchange="playFile('v_file_D', 'videoD')" />
-    AvgWin: <input id="avgwin" value='1' /> <input id="avgwinBtn" type="button" value="Update" onclick="updateAvgWin()" />
-    <input id="playall" type="button" value="Play All" onclick="playall()" />
-    Video/Audio: <input id="stream"  type="checkbox" checked onclick="SelectStream()"/>
-    ShowKeyframe: <input id="Key"  type="checkbox" checked onclick="ToggleShowKeyframe()"/>
+  <div style="text-align: center;">
+    Video: <input id="v_file_A" type="file" onchange="playFile('v_file_A', 'videoA')" />
+    <input id="playall" type="button" value="Play" onclick="playall()" />
   </div>
-<figure class="highcharts-figure">
-  <div id="container"></div>
-</figure>
-<script>
+  <figure class="highcharts-figure">
+    <div id="container"></div>
+  </figure>
+  <script>
     var series = [];
     var pktsize_datas = [];
-    var t = document.getElementById('avgwin');
-    var  avgWin = parseInt(t.value);
     var query = window.location.search.substring(1);
     var vars = query.split("&");
     // console.log('vars: ', vars, 'len', vars.length);
-    var stream = 'v';
-    var showKeyFrame = true;
+    var video_idx = 0;
     function loadUrl(idx) {
       var pair = vars[idx].split("=");
-      if (pair.length <2) {
+      if (pair.length < 2) {
         return;
       }
       var video = document.getElementById(pair[0])
       var names = pair[1].split('/');
-      var name = names[ names.length -1 ];
+      var name = names[names.length - 1];
       fetch(pair[1])
         .then(r => r.blob())
         .then(myBlob => {
@@ -99,18 +92,18 @@
           console.log('name: ', name, 'blob', vfile);
           getPkts(vfile, pair[0]);
           if (idx < vars.length - 1) {
-            loadUrl(idx+1)
+            loadUrl(idx + 1)
           }
         });
     }
     if (vars.length >= 1) {
-        loadUrl(0);
+      loadUrl(0);
     }
     var videoTags = ['videoA', 'videoB', 'videoC', 'videoD'];
     var videos = [];
     for (var tag of videoTags) {
-         var v = document.getElementById(tag)
-         videos.push(v);
+      var v = document.getElementById(tag)
+      videos.push(v);
     }
     function playall() {
       for (var v of videos) {
@@ -130,46 +123,22 @@
     function parseCSV(str) {
       var data = [];
       var lines = str.split('\n');
-      var showMarker = showKeyFrame && (lines.length < 6000);
+      console.log(lines[1])
       for (var line of lines) {
         var items = line.split(',');
         if (items[0] === "packet") {
-          var time = parseFloat(items[1]);
+          var codec_type = (items[1] === 'video' ? 1 : 0.8) + video_idx;
           var size = parseInt(items[2]);
-          var flags = items[3];
-          if (showMarker && flags && flags.startsWith('K')) {
-            data.push( {x:time, y:size, color: "red", marker: { enabled: true}} );
-          } else {
-            data.push( [time, size] );
-          } 
+          var pos = parseInt(items[3]);
+          data.push(  { x: pos, x2: pos + size, y:  codec_type  }  );
         }
       }
       return data;
     }
-
-    function calcAvgBitrate(data, range){
-      if (range <= 1) return data;
-      if (data.length / range < 10) {
-        range = Math.ceil(data.length / 10);
-      }
-      var avg_data = [];
-      for (let a = 0; a < data.length-range; a+= range) {
-        var time = ('x'in data[a]) ? data[a].x :data[a][0];
-        var sum = 0;
-        for (let i = 0; i < range; i++) {
-          sum += ('y' in data[a+i] ?data[a+i].y : data[a+i][1]);
-        }
-        var size = sum *8.0;
-        avg_data.push(  [time, size] );
-      }
-      return avg_data;
-    }
     function updateAvgWin() {
-      var t = document.getElementById('avgwin')
-      avgWin = parseInt(t.value);
       series = [];
-      for ( var seq of pktsize_datas ) {
-        var data = (avgWin > 1) ? calcAvgBitrate(seq.data, avgWin) : seq.data;
+      for (var seq of pktsize_datas) {
+        var data =  seq.data;
         var newSeries = {
           name: seq.name,
           data: data,
@@ -179,13 +148,7 @@
       }
       updateChart();
     }
-    function SelectStream() {
-      stream = stream =='a' ? 'v' : 'a';
-      //console.log('msg: ', stream);
-    }
-    function ToggleShowKeyframe() {
-      showKeyFrame = !showKeyFrame;
-    }
+
     function getPkts(file, vid) {
       var worker = new Worker('dist/probe_worker.js');
       worker.addEventListener('message', function (e) {
@@ -195,30 +158,32 @@
           data: csvData
         };
         pktsize_datas.push(newData);
-        console.log("getPkts", newData.data[0],newData.data.length );
+        console.log("getPkts", newData.data[0], newData.data.length, vid);
+        video_idx += 1;
 
-        var lineData = calcAvgBitrate(csvData, avgWin);
+        var lineData = csvData;
         var newSeries = {
           name: e.data.name,
-          data:lineData,
+          pointWidth: 20,
           id: vid,
+          data: lineData,
         };
         series.push(newSeries);
         updateChart();
       }, false);
       //console.log('msg: ', file);
-      var entries = 'packet=dts_time,size,flags : stream=index,codec_type';
-      worker.postMessage({file:file, stream:stream, entries:entries });
+      var entries = "packet=pos,size,codec_type";
+      worker.postMessage({ file: file, entries: entries });
     }
 
-    function updateChart () {
+    function updateChart() {
       Highcharts.chart('container', {
         chart: {
           zoomType: 'x',
-          type: 'line'
+          type: 'xrange'
         },
         title: {
-          text: 'video bitrate over time'
+          text: 'video /audio position'
         },
         subtitle: {
           text: document.ontouchstart === undefined ?
@@ -232,15 +197,13 @@
           type: 'float'
         },
         yAxis: {
-          title: {
-            text: avgWin > 1 ? 'bitrate (bps)' : "pkg size(Bytes)"
-          }
+          title: { text: "file" }
         },
         series: series
       });
     }
     updateChart();
-</script>
+  </script>
 
 </body>
 
